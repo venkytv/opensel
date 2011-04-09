@@ -1,0 +1,14 @@
+PATTERNS ~/lib/opensel/patterns
+#CACHE ~/lib/opensel/patterns.db
+PLUGINS ~/lib/opensel/plugins
+
+#
+# The BROWSER parameter defined how to invoke the browser
+# The '%s' pattern is replaced with the URL
+#
+
+# Linux, Solaris, etc.
+#BROWSER firefox -remote "openURL(%s,new-tab)"
+
+# Mac OS
+BROWSER open "%s"

@@ -1,0 +1,163 @@
+#!/usr/bin/perl -w
+
+use strict 'vars';
+use Data::Dumper;
+use File::stat;
+use Getopt::Long;
+use Pod::Usage;
+
+Getopt::Long::Configure('no_ignore_case');
+
+my $DEBUG = 0;
+my $rcfile = $ENV{HOME} . '/.openselrc';
+die "Config file not found: $rcfile\n" if not -e $rcfile;
+
+my %config = ();
+open(CONFIG, $rcfile) or die "Unable to open config file: $rcfile\n";
+while (<CONFIG>) {
+    my ($key, $value);
+    next if /^\s*$/;
+    next if /^\s*#/;
+    if (not /^\s*(.*?)\s+(.*)/) {
+        print STDERR "Unable to parse config file: $_\n";
+        next;
+    }
+    $key = $1; $value = $2;
+    if ($value =~ /^~\/(.*)/) {
+        $value = $ENV{HOME} . '/' . $1;
+    }
+    $config{$key} = $value;
+}
+close CONFIG;
+
+my $patterns = $config{PATTERNS} or die "Config parameter not set: PATTERNS\n";
+my $seldb = ($config{CACHE} or $patterns . '.db');
+my $plugindir = $config{PLUGINS} or die "Config parameter not set: PLUGINS\n";
+my $browser = $config{BROWSER} or die "Config parameter not set: BROWSER\n";
+
+my %opts = ();
+my $result = GetOptions(\%opts, 'debug', 'help');
+pod2usage(2) if not $result;
+pod2usage(0) if exists $opts{help};
+$DEBUG = 1 if exists $opts{debug};
+
+my $sel = shift;
+if (not $sel) {
+    $sel = `xsel -p`;
+    die "Unable to retrieve clipboard selection" if not $sel;
+}
+$sel =~ s/^\s*//;
+$sel =~ s/\s*$//;
+print STDERR "Clipboard contents: $sel\n" if $DEBUG;
+
+my $st_rc = stat($patterns);
+my $st_pr = stat($seldb);
+our @pat;
+my $plugin = undef;
+my $match = undef;
+my $mod = qr/([i]*)/;    # List of modifiers allowed after the /../ pattern
+
+if (not -f $seldb or $st_rc->mtime > $st_pr->mtime) {
+    print STDERR "Need to regenerate DB\n" if $DEBUG;
+    open(PATTERNS, $patterns) or die "Unable to open file: $patterns: $!";
+    while (<PATTERNS>) {
+        chomp;
+        next if /^\s*#/;
+        next if /^\s*$/;
+        next if not /\s*\/(.*)\/$mod\s+(\w+)$/;
+        my $pat = $1;
+        my $modifiers = $2;
+        my $plugin = $3;
+        print STDERR "\"$_\" => /$pat/, $plugin\n" if $DEBUG;
+        $pat = "($pat)" if not $pat =~ /\(.*\)/;
+        my $re;
+        if ($modifiers =~ /i/) {
+            $re = qr/$pat/is;
+        } else {
+            $re = qr/$pat/s;
+        }
+        push( @pat, [ $re, $plugin ] );
+    }
+
+    open(DB, '>', $seldb) or die "Unable to write to file: $seldb: $!";
+    print DB Data::Dumper->Dump([\@pat], [qw(*pat)]);
+    close DB;
+    
+} else {
+    do $seldb;
+}
+
+print STDERR "DB: ", Data::Dumper->Dump([\@pat], [qw(*pat)]) if $DEBUG;
+
+#
+# Match pattern
+#
+foreach my $pat (@pat) {
+    my $re = $pat->[0];
+    if ($sel =~ $re) {
+        # Found a match
+        $plugin = $pat->[1];
+        $match = $1;
+        print STDERR "Selection matches plugin: $plugin\n" if $DEBUG;
+        last;
+    }
+}
+die "Could not match selection: \"$sel\"\n" if not $plugin;
+
+#
+# Load plugin
+#
+my $plugf = $plugindir . '/' . $plugin . '.plugin';
+die "Unable to load plugin: $plugf" if not -f $plugf;
+do $plugf or die "Error loading plugin: $plugf\n";
+
+#die "Error loading plugin: $plugf\n" if not defined(&run);
+
+#
+# Utility functions
+#
+
+# Return a google search URL for provided text
+sub googlize($) {
+    my $t = shift;
+    my $google_p = "http://www.google.com/search?q=";
+    return $google_p . uri_escape($t);
+}
+
+# Open provided URL in a new tab in firefox
+sub browser_exec($) {
+    my $arg = shift;
+    my $exec = sprintf($browser, $arg);
+    print STDERR "Exec: $exec\n" if $DEBUG;
+    exec $exec;
+}
+
+#
+# Execute plugin
+#
+run($match, $plugin);
+
+# Plugin is supposed to do an exec.  We should not reach this point unless there
+# is an error.
+print STDERR "Plugin may not have executed successfully: $plugf\n"
+
+__END__
+
+=head1 NAME
+
+opensel - Perform appropriate action on clipboard contents
+
+=head1 SYNOPSIS
+
+opensel [options]
+
+  -d, --debug               Display debug messages
+  -h, -?, --help            Display this usage message
+
+=head1 DESCRIPTION
+
+B<This program> analyzes the clipboard contents and performs appropriate actions
+based on it's contents.  the B<~/etc/openselrc> file can be used to configure
+the actions.
+
+=cut

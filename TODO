@@ -1,0 +1,5 @@
+- Combine patterns and plugins into units that can be dropped in
+- An install script
+    - Options:
+      - Default install -- copy files into right locations
+      - Dev install -- symlink files into location directly from git repo

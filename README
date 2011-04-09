@@ -1,0 +1,27 @@
+A small utility to perform user-configurable actions based on clipboard
+contents.
+
+INSTALLATION:
+
+$ git clone <repo>
+$ cd opensel
+$ mkdir -p ~/bin; cp opensel ~/bin
+$ mkdir -p ~/lib/opensel; cp -r patterns plugins ~/lib/opensel
+$ cp openselrc ~/.openselrc
+
+REQUIREMENTS
+
+Linux, Solaris, OpenSolaris:
+
+    - xsel - http://www.niksula.hut.fi/~vherva/xsel/
+
+Mac OS:
+
+    - Automator Service
+        - Unzip "Smart Clipboard.zip" from the contrib/ directory and copy into
+          your ~/Library/Services directory
+        - [Recommended] Set up a keyboard shortcut.
+          - Instructions on setting up keyboard shortcuts in Snow Leopard:
+            http://www.maclife.com/article/howtos/how_master_services_snow_leopard
+          - The name of the service would be "Smart Clipboard"
+          - I use the shortcut Command-Control-A

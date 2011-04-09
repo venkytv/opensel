@@ -1,0 +1,15 @@
+use URI::Escape;
+
+my %patterns = (
+    ups => 'http://wwwapps.ups.com/WebTracking/processInputRequest?tracknum=%s',
+    rfc => 'http://www.faqs.org/rfcs/rfc%s.html',
+);
+
+# Exported method
+sub run($$) {
+    my ($arg, $plugin) = @_;
+    die "Unknown identifier: $plugin" if not exists $patterns{$plugin};
+    browser_exec(sprintf($patterns{$plugin}, $arg));
+}
+
+# vim: set filetype=perl :

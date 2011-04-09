@@ -1,0 +1,20 @@
+use URI::Escape;
+
+# Exported method
+sub run($$) {
+    my ($arg, $plugin) = @_;
+    $arg =~ tr/\n//d;
+    $arg =~ s/^\s+//;
+    $arg =~ s/\s+$//;
+    $arg =~ s/(?<!\.)\.$//;     # Strip out a single period at the end
+    if ($plugin eq 'google') {
+        $arg = googlize($arg);
+    } else {
+        $arg = 'http://' . $arg if not $arg =~ /^(?:http|ftp)/io;
+    }
+    browser_exec($arg);
+}
+
+1;
+
+# vim: set filetype=perl :
