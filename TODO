@@ -1,4 +1,6 @@
 - Combine patterns and plugins into units that can be dropped in
+- Usage instructions
+- Customization instructions
 - An install script
     - Options:
       - Default install -- copy files into right locations
