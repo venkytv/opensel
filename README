@@ -14,6 +14,9 @@ REQUIREMENTS
 Linux, Solaris, OpenSolaris:
 
     - xsel - http://www.niksula.hut.fi/~vherva/xsel/
+    - Some way of launching a command from a keyboard shortcut.  If your window
+      manager does not support it already, one of the available options:
+      xbindkeys - http://www.nongnu.org/xbindkeys/xbindkeys.html
 
 Mac OS:
 
