@@ -3,7 +3,7 @@ contents.
 
 INSTALLATION:
 
-$ git clone <repo>
+$ git clone git://github.com/venkytv/opensel.git
 $ cd opensel
 $ mkdir -p ~/bin; cp opensel ~/bin
 $ mkdir -p ~/lib/opensel; cp -r patterns plugins ~/lib/opensel
