@@ -1,4 +1,7 @@
 - Combine patterns and plugins into units that can be dropped in
+    - All plugin patterns have equal priority (plugins loaded in alphabetical
+      order) except for a specially designated 'default' plugin which always
+      goes in last and typically contain the catch-all /.*/ pattern.
 - Usage instructions
 - Customization instructions
 - An install script
