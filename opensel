@@ -64,7 +64,8 @@ if (not -f $seldb or $st_rc->mtime > $st_pr->mtime) {
         chomp;
         next if /^\s*#/;
         next if /^\s*$/;
-        next if not /\s*\/(.*)\/$mod\s+(\w+)$/;
+        next if not /\s*\/(.*)\/$mod\s+(\w+)$/ 
+            and not /\s*m.(.*?).$mod\s+(\w+)$/;
         my $pat = $1;
         my $modifiers = $2;
         my $plugin = $3;
@@ -84,7 +85,11 @@ if (not -f $seldb or $st_rc->mtime > $st_pr->mtime) {
     close DB;
     
 } else {
-    do $seldb;
+    unless (my $ret = do $seldb) {
+        die "Could not parse plugin DB: $seldb: $@" if $@;
+        die "Could not load plugin DB: $seldb: $!" unless defined $ret;
+        die "Could not run plugin DB: $seldb" unless $ret;
+    }
 }
 
 print STDERR "DB: ", Data::Dumper->Dump([\@pat], [qw(*pat)]) if $DEBUG;
