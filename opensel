@@ -34,6 +34,8 @@ my $patterns = $config{PATTERNS} or die "Config parameter not set: PATTERNS\n";
 my $seldb = ($config{CACHE} or $patterns . '.db');
 my $plugindir = $config{PLUGINS} or die "Config parameter not set: PLUGINS\n";
 my $browser = $config{BROWSER} or die "Config parameter not set: BROWSER\n";
+my $clipboard_reader = $config{CLIPBOARD_READER}
+    or die "Config parameter not set: CLIPBOARD_READER\n";
 
 my %opts = ();
 my $result = GetOptions(\%opts, 'debug', 'help');
@@ -43,7 +45,7 @@ $DEBUG = 1 if exists $opts{debug};
 
 my $sel = shift;
 if (not $sel) {
-    $sel = `xsel -p`;
+    $sel = `$clipboard_reader`;
     die "Unable to retrieve clipboard selection" if not $sel;
 }
 $sel =~ s/^\s*//;

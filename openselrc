@@ -2,6 +2,9 @@ PATTERNS ~/lib/opensel/patterns
 #CACHE ~/lib/opensel/patterns.db
 PLUGINS ~/lib/opensel/plugins
 
+CLIPBOARD_READER pbpaste
+#CLIPBOARD_READER xsel -p
+
 #
 # The BROWSER parameter defined how to invoke the browser
 # The '%s' pattern is replaced with the URL
